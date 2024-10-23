@@ -48,17 +48,11 @@ services:
     - install_files/web.env
     depends_on:
       - meals-db
-  
-  meals-rabbitmq:
-    container_name: meals-rabbitmq
-    image: rabbitmq:3.13.0-management
-    environment:
-      RABBITMQ_DEFAULT_USER: meals
-      RABBITMQ_DEFAULT_PASS: meals
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-
+    command: >
+      bash -c "
+      python manage.py migrate &&
+      DJANGO_SUPERUSER_PASSWORD=admin python manage.py createsuperuser --noinput --username admin --email admin@example.com || true &&
+      python manage.py runserver 0.0.0.0:8000"
 
   #meals-nginx:
   #  container_name: meals-nginx
