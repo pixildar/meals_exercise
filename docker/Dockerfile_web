@@ -1,0 +1,23 @@
+FROM python:3.12
+RUN apt update
+RUN apt install -y vim
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+#my zsh config
+RUN echo 'alias ll="ls -al"' >> ~/.bashrc
+RUN apt install -y zsh
+RUN curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/install.sh && sed -i 's/CHSH=no/CHSH=yes/g' /tmp/install.sh && echo "Y" | sh /tmp/install.sh 
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+COPY install_files/.p10k.zsh /root/.p10k.zsh
+COPY install_files/.zshrc /root/.zshrc
+#RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+
+
+RUN apt install -y python3-dev
+RUN apt install -y mlocate
+
+WORKDIR /code/
+COPY install_files/requirements.txt .
+RUN pip install -r requirements.txt

@@ -1,0 +1,1 @@
+celery -A meals worker --loglevel=info

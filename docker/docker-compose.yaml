@@ -1,0 +1,77 @@
+#+5
+services:
+
+  meals-pgadmin:
+    container_name: meals-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: root@root.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5055:80"
+
+  meals-db:
+    container_name: meals-db
+    image: postgres
+    volumes:
+      - "meals-db-data-volume:/var/lib/postgresql/data"
+      #- ./install_files/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+    environment:
+      - POSTGRES_USER=meals
+      - POSTGRES_PASSWORD=meals
+    ports:
+      - "5437:5432"
+
+  meals-redis:
+    container_name: meals-redis
+    image: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6384:6379'
+
+  meals-web:
+    container_name: meals-web
+    stdin_open: true
+    tty: true
+    build:
+      context: .
+      dockerfile: Dockerfile_web
+    #no need actually to start project on container start, due to directly operating on container
+    #command: python manage.py runserver 0.0.0.0:8000 
+    volumes:
+      - ../code:/code
+        #- meals-static-volume:/code/static
+    ports:
+      - "8005:8000"
+    env_file:
+    - install_files/web.env
+    depends_on:
+      - meals-db
+  
+  meals-rabbitmq:
+    container_name: meals-rabbitmq
+    image: rabbitmq:3.13.0-management
+    environment:
+      RABBITMQ_DEFAULT_USER: meals
+      RABBITMQ_DEFAULT_PASS: meals
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+
+  #meals-nginx:
+  #  container_name: meals-nginx
+  #  image: nginx
+  #  ports:
+  #    - "80:80"
+  #  volumes:
+  #    - ./install_files/nginx.conf:/etc/nginx/nginx.conf
+  #    #- ./nginx/conf.d:/etc/nginx/conf.d
+  #    - static_volume:/app/static
+  #  depends_on:
+  #    - meals-web
+
+volumes:
+  meals-db-data-volume:
+  meals-static-volume:
